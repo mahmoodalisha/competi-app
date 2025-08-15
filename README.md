@@ -1,3 +1,4 @@
+```
 competi-app/
 │
 ├── .env
@@ -43,7 +44,7 @@ competi-app/
 │   │   └── globals.css
 │   │
 
-
+```
 
 
 Flow Diagram: [React Component] → [Hook] → [/api Route] → [lib Client Wrapper] → [Polymarket API] → back to frontend
