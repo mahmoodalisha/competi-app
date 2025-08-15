@@ -106,7 +106,7 @@ Order executed → response sent to frontend
 8. Order executes
 → Response sent back to the frontend.
 
-1. How Cashout is Accurate<br>
+# How Cashout is Accurate
 Before: <br>
 Discord bot was sending a price along with the cashout request.<br>
 That price could be stale because it was based on an old snapshot of the orderbook.<br>
@@ -116,10 +116,7 @@ The API now does not accept a price from the frontend anymore.<br>
 The backend queries the CLOB orderbook at the moment of cashout, takes the current best bid, and places the sell order at that price<br>
 This means the order is always placed at the most competitive available price.<br>
 
-Key API used here:<br>
-CLOB API (NEXT_PUBLIC_CLOB_API_URL)
-
-2. How Bet Pricing is Accurate <br>
+# How Bet Pricing is Accurate 
 Before:<br>
 The bet price could be outdated <br>
 Now:<br>
@@ -128,7 +125,7 @@ No stale prices are sent from the frontend → server always decides the price i
 Key API used here:<br>
 CLOB API again, but this time for buying (lowest ask) instead of selling (highest bid).
 
-3. How Live Updates Are Solved<br>
+# How Live Updates Are Solved
 I used CLOB WebSocket (NEXT_PUBLIC_CLOB_WS_URL) for real-time price and liquidity changes.<br>
 Frontend updates every time the orderbook changes.<br>
 And I used Gamma API (NEXT_PUBLIC_GAMMA_API_URL) to fetch market listings and details.<br>
@@ -142,7 +139,7 @@ CashoutButton click → useCashout() → POST /api/cashout?tokenId=123
 → Polymarket CLOB API
 → return success → update UI 
 
-CLOB API (https://clob.polymarket.com) <br>
+* CLOB API (https://clob.polymarket.com) <br>
 Purpose: Live trading engine (Central Limit Order Book). <br>
 What it does: <br>
 Returns current orderbook (live buy/sell offers). <br>
@@ -152,13 +149,13 @@ Use in the project: <br>
 For placing bets at the lowest ask price. <br>
 For cashouts at the highest bid price. <br>
 
-CLOB WebSocket (wss://ws-subscriptions-clob.polymarket.com/ws) <br>
+* CLOB WebSocket (wss://ws-subscriptions-clob.polymarket.com/ws) <br>
 Purpose: Live updates to avoid refreshing the page. <br>
 What it does: <br>
 Streams real-time orderbook changes. <br>
 Can instantly update displayed prices and cashout values. <br>
 
-Data API (https://data-api.polymarket.com) <br>
+* Data API (https://data-api.polymarket.com) <br>
 Purpose: Historical & analytical data. <br>
 What it gives: <br>
 Past price movements (candlestick data). <br>
