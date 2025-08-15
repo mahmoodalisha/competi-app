@@ -143,29 +143,29 @@ Gamma API gives all the market metadata: question, outcomes (Yes/No), start/end 
 Gamma API (Market Data)
 
 Base URL: https://gamma-api.polymarket.com
-1. List Markets
-Endpoint: GET /markets
-Example:
+1. List Markets <br>
+Endpoint: GET /markets <br>
+Example: <br>
 https://gamma-api.polymarket.com/markets?limit=50&offset=0&active=true
 
-2. Get Single Market Details
+2. Get Single Market Details <br>
 Endpoint: GET /markets/{marketId}
 
-3. Historical Price Data (Candles / Timeseries)
-Endpoints: GET /markets/{marketId}/candles
-Or under “Pricing and Books”: timeseries endpoints
+3. Historical Price Data (Candles / Timeseries) <br>
+Endpoints: GET /markets/{marketId}/candles <br>
+Or under “Pricing and Books”: timeseries endpoints <br>
 Purpose: Build charts/trend visualizations
 
 4. Fetch Events (Market Grouping)
-Endpoint: GET /events
-Example:
-https://gamma-api.polymarket.com/events?active=true
+Endpoint: GET /events <br>
+Example: <br>
+https://gamma-api.polymarket.com/events?active=true <br>
 Use for: Displaying grouped markets by event, sorting, tags, etc.
 
 CLOB API (Trading & Cashout)
 Base URLs:
-REST: https://clob.polymarket.com
-WebSocket: wss://ws-subscriptions-clob.polymarket.com/ws/
+REST: https://clob.polymarket.com <br>
+WebSocket: wss://ws-subscriptions-clob.polymarket.com/ws/ <br>
 Data-only endpoints (e.g., positions): https://data-api.polymarket.com
 
 
