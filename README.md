@@ -57,7 +57,7 @@ CashoutButton click → useCashout() → POST /api/cashout?tokenId=123
 ## 1️⃣Create a session token
 **POST** http://localhost:3000/api/session/create
 **Request Body:**
-```json
+```
 {
   "discordId": "123456789" // any test Discord user ID
 }
@@ -71,7 +71,7 @@ Use this token in the next API calls.
 
 ## 2️⃣ Fetch open positions
 **GET** http://localhost:3000/api/positions?token=abc123
-```json 
+```
 Response: 
 [
   {
@@ -88,7 +88,7 @@ Response:
 ## 3️⃣ Place a bet
 **POST** http://localhost:3000/api/placeOrders
 **Request Body:**
-```json 
+```
  {
   "token": "abc123",
   "tokenId": "502517",     // Gamma market ID
@@ -104,7 +104,7 @@ Response: {
 
 ## 4️⃣ Cashout a position
 **POST** http://localhost:3000/api/cashout
-```json
+```
 Request Body: {
   "token": "abc123",
   "tokenId": "pos_1",   // position ID you want to cashout
@@ -209,26 +209,26 @@ Instead, the backend looks up the wallet/session for that Discord user, signs th
 
 
 1.Discord bot → /api/session/create
-✅ Generates a 10 minutes token mapped to Discord user and wallet.
-✅ Sends URL with token back to user.
+* ✅ Generates a 10 minutes token mapped to Discord user and wallet.
+* ✅ Sends URL with token back to user.
 This ensures only the Discord user can see their own positions.
 
 2.User clicks URL → frontend reads token
-✅ Token stored in query params.
-✅ Frontend calls backend APIs passing this token.
+* ✅ Token stored in query params.
+* ✅ Frontend calls backend APIs passing this token.
 
 3.Fetch positions → /api/positions
-✅ Uses token to verify user → fetch wallet address → query Polymarket API.
-✅ Returns all open positions for that wallet.
-✅ Can be updated with WebSocket subscription for constantly updating cashout values.
+* ✅ Uses token to verify user → fetch wallet address → query Polymarket API.
+* ✅ Returns all open positions for that wallet.
+* ✅ Can be updated with WebSocket subscription for constantly updating cashout values.
 
 4.One-click cashout → /api/cashout
-✅ Token validated → wallet resolved → order signed server-side → sent to CLOB.
-✅ Only backend handles wallet private key — frontend never sees it.
+* ✅ Token validated → wallet resolved → order signed server-side → sent to CLOB.
+* ✅ Only backend handles wallet private key — frontend never sees it.
 
 5.Place bet → /api/placeOrders
-✅ Works the same way: token → wallet → sign → send order.
-✅ Allows the same Discord flow for placing trades. 
+* ✅ Works the same way: token → wallet → sign → send order.
+* ✅ Allows the same Discord flow for placing trades. 
 
 
 
