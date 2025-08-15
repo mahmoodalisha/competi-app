@@ -54,20 +54,26 @@ CashoutButton click → useCashout() → POST /api/cashout?tokenId=123
 → Polymarket CLOB API
 → return success → update UI 
 
-1️⃣Create a session token
-POST http://localhost:3000/api/session/create
-Request Body: {
-  "discordId": "123456789"  // any test Discord user ID
+## 1️⃣Create a session token
+**POST** http://localhost:3000/api/session/create
+**Request Body:**
+```json
+{
+  "discordId": "123456789" // any test Discord user ID
 }
+
 Response: {
   "url": "http://localhost:3000/cashout?token=abc123",
   "token": "abc123"
 }
+```
 Use this token in the next API calls.
 
-2️⃣ Fetch open positions
-GET http://localhost:3000/api/positions?token=abc123
-Response: [
+## 2️⃣ Fetch open positions
+**GET** http://localhost:3000/api/positions?token=abc123
+```json 
+Response: 
+[
   {
     "positionId": "pos_1",
     "marketId": "0x123",
@@ -77,10 +83,13 @@ Response: [
     "currentCashout": 5.5
   }
 ]
+```
 
-3️⃣ Place a bet
-POST http://localhost:3000/api/placeOrders
-Request Body: {
+## 3️⃣ Place a bet
+**POST** http://localhost:3000/api/placeOrders
+**Request Body:**
+```json 
+ {
   "token": "abc123",
   "tokenId": "502517",     // Gamma market ID
   "amount": 10,           // how much to bet
@@ -91,9 +100,11 @@ Response: {
   "price": 0.556,   // actual price used from CLOB
   "details": { ... }
 }
+```
 
-4️⃣ Cashout a position
-POST http://localhost:3000/api/cashout
+## 4️⃣ Cashout a position
+**POST** http://localhost:3000/api/cashout
+```json
 Request Body: {
   "token": "abc123",
   "tokenId": "pos_1",   // position ID you want to cashout
@@ -105,7 +116,7 @@ Response: {
   "price": 0.602,   // actual price used from CLOB
   "details": { ... }
 }
-
+```
 
 The Discord ID is a unique numeric identifier for every Discord user. It’s assigned by Discord itself, not by the app. Enable “Developer Mode” in Discord:
 Go to User Settings → Advanced → Developer Mode → ON
@@ -113,10 +124,10 @@ Right-click a user → Copy ID
 That copied ID is exactly what the Discord bot will receive whenever a user interacts with it (slash commands, button clicks, etc.).
 
 Gamma API gives all the market metadata: question, outcomes (Yes/No), start/end date, etc. When we place a bet, the backend sends an order to CLOB with that marketId and the selected outcome (Yes or No).The price is what we want to buy at, and amount is how much we’re betting.
-⦁	Backend doesn’t need to know which market the user is interacting with in Discord ahead of time.
-⦁	Discord bot: when the user clicks /bet or /cashout in Discord, the bot knows which market or outcome the user selected.
-⦁	The bot then sends a request to backend (or generates a session token URL) that’s tied to that Discord ID.
-⦁	Backend workflow:
+*	Backend doesn’t need to know which market the user is interacting with in Discord ahead of time.
+*	Discord bot: when the user clicks /bet or /cashout in Discord, the bot knows which market or outcome the user selected.
+*	The bot then sends a request to backend (or generates a session token URL) that’s tied to that Discord ID.
+*	Backend workflow:
 1.	Receive session token from frontend (generated via Discord ID).
 2.	Look up the wallet address associated with that Discord ID.
 3.	Use the token + request body (amount, price, and for cashout, position ID) to place the order.
