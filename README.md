@@ -10,7 +10,7 @@ competi-app/
 ├── public/                    
 │
 ├── src/
-│   ├── pages/                 # Page routes (if using Pages Router)
+│   ├── pages/                 
 │   │   ├── market/[id].tsx    # Single market details & place bet
 │   │   ├── cashout.tsx        # Cashout positions page
 │   │   └── api/               # API routes (server-side logic)
