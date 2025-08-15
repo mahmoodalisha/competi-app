@@ -1,3 +1,4 @@
+## Complete Folder Structure
 ```
 competi-app/
 │
@@ -66,23 +67,22 @@ Flow Diagram:
 
 ```
 
-1. How Cashout is Accurate
+1. How Cashout is Accurate<br>
 Before: <br>
 Discord bot was sending a price along with the cashout request.<br>
 That price could be stale because it was based on an old snapshot of the orderbook.<br>
 If the market moved in those seconds, the cashout could fail or give a worse fill.<br>
-
 Now:<br>
-My API does not accept a price from the frontend anymore.<br>
+The API now does not accept a price from the frontend anymore.<br>
 The backend queries the CLOB orderbook at the moment of cashout, takes the current best bid, and places the sell order at that price<br>
 This means the order is always placed at the most competitive available price.<br>
 
 Key API used here:<br>
 CLOB API (NEXT_PUBLIC_CLOB_API_URL)
 
-2. How Bet Pricing is Accurate
+2. How Bet Pricing is Accurate <br>
 Before:<br>
-The bet price could be outdated<br>
+The bet price could be outdated <br>
 Now:<br>
 It queries the CLOB API for the current lowest ask price (cheapest someone is willing to sell at) at the moment the bet is placed<br>
 No stale prices are sent from the frontend → server always decides the price in real time.<br>
