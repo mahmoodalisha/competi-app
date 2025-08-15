@@ -106,7 +106,7 @@ Order executed → response sent to frontend
 8. Order executes
 → Response sent back to the frontend.
 
-# How Cashout is Accurate
+## How Cashout is Accurate
 Before: <br>
 Discord bot was sending a price along with the cashout request.<br>
 That price could be stale because it was based on an old snapshot of the orderbook.<br>
@@ -116,7 +116,7 @@ The API now does not accept a price from the frontend anymore.<br>
 The backend queries the CLOB orderbook at the moment of cashout, takes the current best bid, and places the sell order at that price<br>
 This means the order is always placed at the most competitive available price.<br>
 
-# How Bet Pricing is Accurate 
+## How Bet Pricing is Accurate 
 Before:<br>
 The bet price could be outdated <br>
 Now:<br>
@@ -125,7 +125,7 @@ No stale prices are sent from the frontend → server always decides the price i
 Key API used here:<br>
 CLOB API again, but this time for buying (lowest ask) instead of selling (highest bid).
 
-# How Live Updates Are Solved
+## How Live Updates Are Solved
 I used CLOB WebSocket (NEXT_PUBLIC_CLOB_WS_URL) for real-time price and liquidity changes.<br>
 Frontend updates every time the orderbook changes.<br>
 And I used Gamma API (NEXT_PUBLIC_GAMMA_API_URL) to fetch market listings and details.<br>
@@ -164,7 +164,7 @@ Trade history. <br>
 Use in the project: <br>
 Displaying market trends in a graph. <br>
 
-# .env file contains 
+## .env file contains 
 ```
 NEXT_PUBLIC_GAMMA_API_URL=https://gamma-api.polymarket.com
 NEXT_PUBLIC_CLOB_API_URL=https://clob.polymarket.com
