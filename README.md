@@ -47,12 +47,99 @@ competi-app/
 ```
 
 
-Flow Diagram: [React Component] → [Hook] → [/api Route] → [lib Client Wrapper] → [Polymarket API] → back to frontend
+Flow Diagram: 
+
+```
+[React Component: CashoutButton Click]
+    ↓
+[useCashout() Hook]
+    ↓
+[POST /api/cashout?tokenId=123]
+    ↓
+[lib/clobClient.cashoutPosition("123")]
+    ↓
+[CLOB REST API: /orderbook, /trade endpoints]
+    ↓
+[Polymarket Matching Engine]
+    ↓
+[Success Response → Update UI]
+
+```
+
+1. How Cashout is Accurate
+Before: <br>
+Discord bot was sending a price along with the cashout request.<br>
+That price could be stale because it was based on an old snapshot of the orderbook.<br>
+If the market moved in those seconds, the cashout could fail or give a worse fill.<br>
+
+Now:<br>
+My API does not accept a price from the frontend anymore.<br>
+The backend queries the CLOB orderbook at the moment of cashout, takes the current best bid, and places the sell order at that price<br>
+This means the order is always placed at the most competitive available price.<br>
+
+Key API used here:<br>
+CLOB API (NEXT_PUBLIC_CLOB_API_URL)
+
+2. How Bet Pricing is Accurate
+Before:<br>
+The bet price could be outdated<br>
+Now:<br>
+It queries the CLOB API for the current lowest ask price (cheapest someone is willing to sell at) at the moment the bet is placed<br>
+No stale prices are sent from the frontend → server always decides the price in real time.<br>
+Key API used here:<br>
+CLOB API again, but this time for buying (lowest ask) instead of selling (highest bid).
+
+3. How Live Updates Are Solved<br>
+I used CLOB WebSocket (NEXT_PUBLIC_CLOB_WS_URL) for real-time price and liquidity changes.<br>
+Frontend updates every time the orderbook changes.<br>
+And I used Gamma API (NEXT_PUBLIC_GAMMA_API_URL) to fetch market listings and details.<br>
+
+1.	Cashout is accurate → always sells at the highest bid price from CLOB.
+2.	Bet pricing is accurate → always buys at the lowest ask price from CLOB.
+3.	Frontend no longer sends price → avoids stale or outdated prices.
 
 CashoutButton click → useCashout() → POST /api/cashout?tokenId=123
 → lib/clobClient.cashoutPosition("123")
 → Polymarket CLOB API
 → return success → update UI 
+
+CLOB API (https://clob.polymarket.com) <br>
+Purpose: Live trading engine (Central Limit Order Book). <br>
+What it does: <br>
+Returns current orderbook (live buy/sell offers). <br>
+Places buy or sell orders (bets and cashouts). <br>
+Matches trades at the best available price right now. <br>
+Use in the project: <br>
+For placing bets at the lowest ask price. <br>
+For cashouts at the highest bid price. <br>
+
+CLOB WebSocket (wss://ws-subscriptions-clob.polymarket.com/ws) <br>
+Purpose: Live updates to avoid refreshing the page. <br>
+What it does: <br>
+Streams real-time orderbook changes. <br>
+Can instantly update displayed prices and cashout values. <br>
+
+Data API (https://data-api.polymarket.com) <br>
+Purpose: Historical & analytical data. <br>
+What it gives: <br>
+Past price movements (candlestick data). <br>
+Volume over time. <br>
+Trade history. <br>
+Use in the project: <br>
+Displaying market trends in a graph. <br>
+
+# .env file contains 
+```
+NEXT_PUBLIC_GAMMA_API_URL=https://gamma-api.polymarket.com
+NEXT_PUBLIC_CLOB_API_URL=https://clob.polymarket.com
+NEXT_PUBLIC_CLOB_WS_URL=wss://ws-subscriptions-clob.polymarket.com/ws
+NEXT_PUBLIC_DATA_API_URL=https://data-api.polymarket.com
+NEXT_PUBLIC_USE_MOCK=false
+POLYGON_RPC_URL=https://polygon-rpc.com
+WALLET_PRIVATE_KEY=your_private_key_here
+JWT_SECRET=you_secret_key
+REDIS_URL=redis://127.0.0.1:6379
+```
 
 ## 1️⃣Create a session token
 **POST** http://localhost:3000/api/session/create
@@ -134,9 +221,6 @@ Gamma API gives all the market metadata: question, outcomes (Yes/No), start/end 
 ⦁	Market ID in placeOrders: comes from the Discord bot’s context, not something the frontend or backend decides.
 ⦁	Handle the request with token + wallet + amount/price and send it to Polymarket/CLOB. 
 
-1.	Cashout is accurate → always sells at the highest bid price from CLOB.
-2.	Bet pricing is accurate → always buys at the lowest ask price from CLOB.
-3.	Frontend no longer sends price → avoids stale or outdated prices.
 
 
 
