@@ -51,21 +51,60 @@ competi-app/
 Flow Diagram: 
 
 ```
-[React Component: CashoutButton Click]
+[Discord Bot Command (/cashout or /placebet)]
     ↓
-[useCashout() Hook]
+Backend: POST /api/session/create (Next.js API route)
     ↓
-[POST /api/cashout?tokenId=123]
+Generates short-lived token (JWT) tied to Discord user + wallet
     ↓
-[lib/clobClient.cashoutPosition("123")]
+Returns pop-out URL with token → Discord bot sends link to user
     ↓
-[CLOB REST API: /orderbook, /trade endpoints]
+User clicks link → opens Next.js page (cashout.tsx or market/[id].tsx)
     ↓
-[Polymarket Matching Engine]
+Page loads → reads token from query string
     ↓
-[Success Response → Update UI]
+Uses hook (usePositions, useMarketData) → calls Next.js API routes
+    ↓
+API routes use lib/gammaClient.ts and lib/clobClient.ts to call external Polymarket APIs
+    ↓
+Data returned → UI renders
+    ↓
+When user clicks "Cashout" or "Place Bet"
+    ↓
+Frontend POSTs to /api/cashout or /api/placeOrder (with token + params)
+    ↓
+API route looks up wallet from token → calls CLOB API (real price)
+    ↓
+Order executed → response sent to frontend
 
 ```
+1. Discord bot sends /cashout or /placebet
+→ This triggers a POST to api/session/create in Next.js backend.
+
+2. /api/session/create
+→ Generates a short-lived JWT with discordId and wallet address.
+→ Returns both a token and a URL (like http://localhost:3000/cashout?token=...).
+→ example response shows this.
+
+3. User clicks the link
+→ Browser opens Next.js page (cashout.tsx or market/[id].tsx) with the token in the query string.
+
+4. Page loads
+→ Reads the token from the query string.
+→ Uses hooks (usePositions, useMarketData) to call Next.js API routes.
+
+5. Next.js API routes
+→ Inside /api/positions, /api/markets, etc., we use gammaClient.ts and clobClient.ts to hit the Polymarket APIs (Gamma for market data, CLOB for orders).
+
+6. User clicks "Cashout" or "Place Bet"
+→ Frontend calls /api/cashout or /api/placeOrder with the token and details.
+
+7. Backend verifies token
+→ Extracts wallet + Discord ID from JWT.
+→ Calls CLOB API to execute the trade.
+
+8. Order executes
+→ Response sent back to the frontend.
 
 1. How Cashout is Accurate<br>
 Before: <br>
