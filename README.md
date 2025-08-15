@@ -168,39 +168,6 @@ REST: https://clob.polymarket.com
 WebSocket: wss://ws-subscriptions-clob.polymarket.com/ws/
 Data-only endpoints (e.g., positions): https://data-api.polymarket.com
 
-1. List CLOB Markets (for trading)
-Endpoint: GET /markets?next_cursor={cursor}
-Usage: Paginated list of all active/tradable markets via CLOB
-
-2. Get Order Book (Live Book via REST)
-Endpoint: GET /book/{marketId} or similar REST path (e.g., /books)
-Purpose: Retrieve current bids, asks, midpoints for market
-
-3. Place Buy/Sell Order (including cashout)
-Endpoint: POST /order
-Payload: Signed limit or market order (with EIP-712 data such as price, size, tokenId, side, expiration, signature, etc.)
-Auth Level: Requires L2 (API key) headers or signing with private key (L1)
-
-
-4. User Positions (Data API)
-Endpoint: GET /positions
-Purpose: Fetch your open positions to show what can be cashed out
-Note: Usually part of Data-API suite
-
-5. Get Trades (All Users or by Market/User)
-Endpoint: GET https://data-api.polymarket.com/trades?[filters]
-Filters: user, market, side, limit, etc.
-Purpose: Show recent trades for activity feed
-
-6. WebSocket Feed (Real-time Order Book)
-Endpoint: wss://ws-subscriptions-clob.polymarket.com/ws/
-Channels: market (for order book updates) and user (if authenticated)
-Use it for: Live price updates to drive real-time UI (cashout values, charts)
-
-CLOB Authentication Layers
-Level 1 (L1): Use your wallet’s private key to sign EIP-712 messages (POLY_ADDRESS, POLY_SIGNATURE, etc.)
-Level 2 (L2): Use generated API key, passphrase, plus HMAC signature for requests
-
 
 
 The Discord bot already has the user’s wallet details from their session
