@@ -1,19 +1,25 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 
-const GAMMA_API = process.env.NEXT_PUBLIC_GAMMA_API_URL;
+const GAMMA_API = "https://gamma-api.polymarket.com";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { limit = 20, offset = 0, active = true } = req.query;
+    const { data } = await axios.get(
+      `${GAMMA_API}/markets?limit=200&offset=0&active=true&closed=false`
+    );
+    const marketsArray = Array.isArray(data) ? data : data.data;
+    const markets = marketsArray.map((m: any) => ({
+      id: m.id,
+      question: m.question,
+      slug: m.slug,
+      active: m.active,
+      volume: m.volume,
+    }));
 
-    const response = await axios.get(`${GAMMA_API}/markets`, {
-      params: { limit, offset, active }
-    });
-
-    res.status(200).json(response.data);
-  } catch (error: any) {
-    console.error("Error fetching markets:", error.message);
+    res.status(200).json(markets);
+  } catch (err: any) {
+    console.error("Markets API error:", err.response?.data || err.message);
     res.status(500).json({ error: "Failed to fetch markets" });
   }
 }

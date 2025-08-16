@@ -13,6 +13,7 @@ competi-app/
 ├── src/
 │   ├── pages/                 
 │   │   ├── market/[id].tsx    # Single market details & place bet
+|   |   ├── markets/index.tsx  # Shows the market cards
 │   │   ├── cashout.tsx        # Cashout positions page
 │   │   └── api/               # API routes (server-side logic)
 │   │       ├── markets/

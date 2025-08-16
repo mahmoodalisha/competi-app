@@ -5,8 +5,9 @@ export interface Market {
   id: string;
   question: string;
   outcomes: string[];
-  status: "open" | "closed";
-  [key: string]: any;
+  orderbook: any;
+  odds: number[];
+  probabilities: number[];
 }
 
 export const useMarketData = (marketId: string) => {
@@ -14,19 +15,24 @@ export const useMarketData = (marketId: string) => {
   const [loading, setLoading] = useState(true);
 
   const fetchMarket = async () => {
+    if (!marketId) return;
     setLoading(true);
+
     try {
       const { data } = await axios.get(`/api/markets/${marketId}`);
       setMarket(data);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching market:", err);
       setMarket(null);
     }
+
     setLoading(false);
   };
 
   useEffect(() => {
-    if (marketId) fetchMarket();
+    fetchMarket();
+    const interval = setInterval(fetchMarket, 10000);
+    return () => clearInterval(interval);
   }, [marketId]);
 
   return { market, loading, refresh: fetchMarket };
