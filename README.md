@@ -319,14 +319,18 @@ This ensures only the Discord user can see their own positions.
 * ✅ Allows the same Discord flow for placing trades. 
 
 
+<img width="1846" height="1033" alt="Screenshot 2025-08-18 120443 1" src="https://github.com/user-attachments/assets/572d8436-2bf1-4cb4-a8eb-f89bf817a032" />
+
+<img width="1913" height="969" alt="Screenshot 2025-08-17 015514" src="https://github.com/user-attachments/assets/d1b05a8b-1c1f-4d38-9206-18cd4f8ed7ac" />
+
+
+
 <img width="1920" height="1080" alt="Screenshot 2025-08-15 170444" src="https://github.com/user-attachments/assets/26ec055b-95c6-4095-94e1-128fd2dd2ec5" />
 
 <img width="1920" height="1020" alt="Screenshot 2025-08-15 201526" src="https://github.com/user-attachments/assets/2436e55a-0500-4065-96cc-8d575851020f" />
 
-The order failed to place as it requires real funds in the wallet
-<img width="1920" height="1020" alt="Screenshot 2025-08-15 204346" src="https://github.com/user-attachments/assets/a9653ff3-8fe8-4234-9709-8d9a6fbb61d2" />
 
 ## Mock open positions
 <img width="1919" height="972" alt="Screenshot 2025-08-15 215100" src="https://github.com/user-attachments/assets/94b79b99-5bea-4a7a-8d9e-0d1cdd544df5" />
 
-<img width="1917" height="968" alt="Screenshot 2025-08-15 215112" src="https://github.com/user-attachments/assets/732e9506-6d9c-4ac7-a28e-11e6d83c4b5a" />
+
