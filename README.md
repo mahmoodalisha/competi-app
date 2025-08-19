@@ -45,7 +45,14 @@ competi-app/
 │   ├── styles/
 │   │   └── globals.css
 │   │
-
+│
+├── bot/                         # NEW: Discord bot service
+│   ├── commands/                # Slash command files
+│   │   ├── market.js
+│   │   └── cashout.js
+│   ├── index.js                 # Main Discord bot (was src/index.js)
+│   ├── deploy-commands.js       # Registers slash commands
+│   └── package.json             # Bot deps (discord.js, dotenv, etc.)
 ```
 
 

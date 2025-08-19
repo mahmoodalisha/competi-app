@@ -1,4 +1,3 @@
-//pages/market/[id].tsx
 import { useEffect, useState } from "react";
 import { useMarketData } from "../../hooks/useMarketData";
 import { usePlaceOrder } from "../../hooks/usePlaceOrder";
@@ -32,7 +31,7 @@ export default function MarketPage() {
   if (loading || !marketId) return <Loader />;
   if (!market) return <p>Market not found</p>;
 
-  // Parse outcomes array safely
+  
   let outcomes: string[] = [];
   try {
     outcomes =
@@ -140,7 +139,7 @@ export default function MarketPage() {
           </button>
         </div>
 
-        {/* Review button */}
+        
         <button
           onClick={() => {
             if (selectedOutcome && amount > 0) {
