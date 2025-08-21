@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import jwt from "jsonwebtoken";
 import axios from "axios";
+import redis from "@/lib/redis";
 
 const CLOB_API = "https://clob.polymarket.com";
 const JWT_SECRET = process.env.JWT_SECRET!;
@@ -36,11 +37,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       size,
       price,
       wallet,
+      timestamp: Date.now()
     };
-
+    // Save order in Redis (list per wallet)
+    const key = `orders:${wallet}`;
+    await redis.rpush(key, JSON.stringify(orderPayload));
     // const clobRes = await axios.post(`${CLOB_API}/orders`, orderPayload);
 
-    return res.json({ success: true, order: orderPayload });
+    return res.status(200).json({ success: true, order: orderPayload });
   } catch (err: any) {
     console.error("PlaceOrder error:", err);
     return res.status(500).json({ error: "Failed to place order" });
