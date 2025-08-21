@@ -103,7 +103,7 @@ export default function MarketPage() {
           </p>
         </div>
 
-        {/* Bet controls */}
+        
         <div className="flex items-center justify-center gap-4 mb-4">
           <button
             onClick={() => adjustAmount(-10)}
@@ -120,7 +120,7 @@ export default function MarketPage() {
           </button>
         </div>
 
-        {/* Quick set buttons */}
+        
         <div className="flex justify-center gap-2 mb-6 flex-wrap">
           {[1, 10, 50, 1000].map((val) => (
             <button

@@ -1,8 +1,19 @@
-// temporary function for testing
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+
 async function getWalletForDiscord(discordId) {
-  // TODO: fetch from DB later
-  return "0x67849Fb8d4a62C87D9C426E32102f9f63885d482";
+  console.log("🔎 ENV WALLET_ADDRESS:", process.env.WALLET_ADDRESS);
+  return process.env.WALLET_ADDRESS;
 }
+
 
 export default {
   data: {
@@ -25,7 +36,7 @@ export default {
 
       console.log("✅ Discord ID:", discordId);
 
-      // immediately defer reply (acknowledge)
+      
       await interaction.deferReply({ ephemeral: true });
 
       const wallet = await getWalletForDiscord(discordId);

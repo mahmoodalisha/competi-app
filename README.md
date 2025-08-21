@@ -2,7 +2,8 @@
 ```
 competi-app/
 │
-├── .env
+├── .env                      # Contains private key & wallet address
+├── .env.local
 ├── package.json
 ├── tsconfig.json
 ├── tailwind.config.js
@@ -48,7 +49,7 @@ competi-app/
 │
 ├── bot/                         # NEW: Discord bot service
 │   ├── commands/                # Slash command files
-│   │   ├── market.js
+│   │   ├── placebet.js
 │   │   └── cashout.js
 │   ├── index.js                 # Main Discord bot (was src/index.js)
 │   ├── deploy-commands.js       # Registers slash commands
