@@ -34,6 +34,7 @@ competi-app/
 │   │   ├── gammaClient.ts      # Wrap Gamma API calls
 │   │   ├── clobClient.ts       # Wrap CLOB API calls
 │   │   ├── auth.ts             # Wallet signing/auth helpers
+|   |   ├── redis.ts
 │   │   └── config.ts           # Reads values from .env
 │   │
 │   ├── hooks/                  # React hooks for live data
@@ -41,7 +42,8 @@ competi-app/
 │   │   ├── useMarketData.ts
 │   │   ├── usePositions.ts
 │   │   ├── useCashout.ts
-│   │   └── usePlaceOrder.ts
+│   │   ├── usePlaceOrder.ts
+|   |   ├── useLivePrices.ts
 │   │
 │   ├── styles/
 │   │   └── globals.css
@@ -121,9 +123,13 @@ Discord bot was sending a price along with the cashout request.<br>
 That price could be stale because it was based on an old snapshot of the orderbook.<br>
 If the market moved in those seconds, the cashout could fail or give a worse fill.<br>
 Now:<br>
-The API now does not accept a price from the frontend anymore.<br>
-The backend queries the CLOB orderbook at the moment of cashout, takes the current best bid, and places the sell order at that price<br>
-This means the order is always placed at the most competitive available price.<br>
+✅ Live Market Rates: getBestMarketPrice() fetches real-time bids /book endpoint<br>
+✅ Accurate Pricing: No cached/stale prices - always fresh from /book<br>
+✅ Specific Position Cashout: Can target exact marketId + wallet<br>
+✅ Real-time Values: Each API call gets current market data<br>
+✅ Token ID Integration: Properly maps positions to tradeable tokens<br>
+✅ currentBestBid: 0.925 - real-time market rate<br>
+✅ recommendedSellPrice: 0.91575 - 99% of live price for execution<br>
 
 ## How Bet Pricing is Accurate 
 Before:<br>
@@ -132,7 +138,7 @@ Now:<br>
 It queries the CLOB API for the current lowest ask price (cheapest someone is willing to sell at) at the moment the bet is placed<br>
 No stale prices are sent from the frontend → server always decides the price in real time.<br>
 Key API used here:<br>
-CLOB API again, but this time for buying (lowest ask) instead of selling (highest bid).
+CLOB API again, but this time for buying (lowest ask) instead of selling (highest bid).<br>
 
 ## How Live Updates Are Solved
 I used CLOB WebSocket (NEXT_PUBLIC_CLOB_WS_URL) for real-time price and liquidity changes.<br>
@@ -175,46 +181,114 @@ Displaying market trends in a graph. <br>
 
 ## .env file contains 
 ```
+PRIVATE_KEY=your_private_key
+WALLET_ADDRESS=your_wallet_address
+JWT_SECRET=your_jwt_secret
+REDIS_URL=redis://127.0.0.1:6379
+DISCORD_TOKEN=your_discord_token
+DISCORD_CLIENT_ID=your_discord_client
+```
+## .env.local contains
+```
 NEXT_PUBLIC_GAMMA_API_URL=https://gamma-api.polymarket.com
 NEXT_PUBLIC_CLOB_API_URL=https://clob.polymarket.com
 NEXT_PUBLIC_CLOB_WS_URL=wss://ws-subscriptions-clob.polymarket.com/ws
 NEXT_PUBLIC_DATA_API_URL=https://data-api.polymarket.com
 NEXT_PUBLIC_USE_MOCK=false
 POLYGON_RPC_URL=https://polygon-rpc.com
-WALLET_PRIVATE_KEY=your_private_key_here
-JWT_SECRET=you_secret_key
+WALLET_PRIVATE_KEY=your_wallet_address
+JWT_SECRET=your_jwt_secret
 REDIS_URL=redis://127.0.0.1:6379
 ```
-
-## 1️⃣Create a session token
-**POST** http://localhost:3000/api/session/create
-**Request Body:**
+## How run the server: 
 ```
-{
-  "discordId": "123456789" // any test Discord user ID
-}
+fork clone https://github.com/mahmoodalisha/competi-app.git
+cd competi-app
+npm run dev
 
-Response: {
-  "url": "http://localhost:3000/cashout?token=abc123",
-  "token": "abc123"
-}
+cd bot
+node deploy-commands.js
+node index.js
+```
+
+## 1️⃣Visit the discord BOT server
+* Place a /placebet command
+* Enter a market id
+* Receive a url like this:
+* Session created! Click here: http://localhost:3000/market/516706?token=eyJhbGciOiJ
+* Visit the page to place a bet and see the live graph
+
 ```
 Use this token in the next API calls.
 
 ## 2️⃣ Fetch open positions
-**GET** http://localhost:3000/api/positions?token=abc123
+**GET** http://localhost:3000/api/positions?wallet=yourwalletaddress
+
+**Response:**
 ```
-Response: 
-[
-  {
-    "positionId": "pos_1",
-    "marketId": "0x123",
-    "outcome": "YES",
-    "size": 10,
-    "price": 0.55,
-    "currentCashout": 5.5
-  }
-]
+{
+  "success": true,
+  "wallet": "your wallet address",
+  "positions": [
+    {
+      "marketId": "516706",
+      "outcome": "NO",
+      "size": 300,
+      "price": 0.35,
+      "tokenID": "81104637750588840860328515305303028259865221573278091453716127842023614249200",
+      "wallet": "your wallet address",
+      "timestamp": 1755934989091
+    },
+    {
+      "marketId": "516717",
+      "outcome": "YES",
+      "size": 500,
+      "price": 0.55,
+      "tokenID": "84933668601774689515031739413415177606677344300836824135590506442377653851020",
+      "wallet": "your wallet address",
+      "timestamp": 1755935059743
+    },
+    {
+      "marketId": "516720",
+      "outcome": "NO",
+      "size": 365,
+      "price": 0.35,
+      "tokenID": "13310920295352519429188380245880301405446543407852746139009983343885307875580",
+      "wallet": "your wallet address",
+      "timestamp": 1755935099653
+    }
+  ],
+  "openOrders": [
+    {
+      "marketId": "516706",
+      "outcome": "NO",
+      "size": 300,
+      "price": 0.35,
+      "tokenID": "81104637750588840860328515305303028259865221573278091453716127842023614249200",
+      "wallet": "your wallet address",
+      "timestamp": 1755934989091
+    },
+    {
+      "marketId": "516717",
+      "outcome": "YES",
+      "size": 500,
+      "price": 0.55,
+      "tokenID": "84933668601774689515031739413415177606677344300836824135590506442377653851020",
+      "wallet": "your wallet address",
+      "timestamp": 1755935059743
+    },
+    {
+      "marketId": "516720",
+      "outcome": "NO",
+      "size": 365,
+      "price": 0.35,
+      "tokenID": "13310920295352519429188380245880301405446543407852746139009983343885307875580",
+      "wallet": "your wallet address",
+      "timestamp": 1755935099653
+    }
+  ],
+  "source": "redis"
+}
 ```
 
 ## 3️⃣ Place a bet
@@ -222,15 +296,22 @@ Response:
 **Request Body:**
 ```
  {
-  "token": "abc123",
-  "tokenId": "502517",     // Gamma market ID
-  "amount": 10,           // how much to bet
+  "marketId": "516720",
+  "outcome": "NO",
+  "size": 365,
+  "price": 0.35
 }
 Response: {
-  "orderId": "order_1",
-  "status": "success",
-  "price": 0.556,   // actual price used from CLOB
-  "details": { ... }
+  "success": true,
+  "order": {
+    "marketId": "516720",
+    "outcome": "NO",
+    "size": 365,
+    "price": 0.35,
+    "tokenID": "13310920295352519429188380245880301405446543407852746139009983343885307875580",
+    "wallet": "wallet address",
+    "timestamp": 1755935099653
+  }
 }
 ```
 
@@ -238,26 +319,33 @@ Response: {
 **POST** http://localhost:3000/api/cashout
 ```
 Request Body: {
-  "token": "abc123",
-  "tokenId": "pos_1",   // position ID you want to cashout
-  "amount": 10,         // partial or full position
+  "wallet": "your wallet address",
+  "marketId": "516720",
+  "fullCashout": true
 }
 Response: {
-  "orderId": "order_2",
-  "status": "success",
-  "price": 0.602,   // actual price used from CLOB
-  "details": { ... }
+  "success": true,
+  "message": "Live market data retrieved successfully",
+  "position": {
+    "marketId": "516720",
+    "outcome": "NO",
+    "size": 365,
+    "tokenID": "13310920295352519429188380245880301405446543407852746139009983343885307875580"
+  },
+  "liveMarketData": {
+    "currentBestBid": 0.001,
+    "recommendedSellPrice": 0.00099,
+    "estimatedCashoutValue": 0.36135,
+    "timestamp": "2025-08-23T08:40:54.837Z"
+  },
+  "instructions": "Use CLOB TypeScript client to execute the actual sell order"
 }
 ```
 
-The Discord ID is a unique numeric identifier for every Discord user. It’s assigned by Discord itself, not by the app. Enable “Developer Mode” in Discord:
-Go to User Settings → Advanced → Developer Mode → ON
-Right-click a user → Copy ID
-That copied ID is exactly what the Discord bot will receive whenever a user interacts with it (slash commands, button clicks, etc.).
 
 Gamma API gives all the market metadata: question, outcomes (Yes/No), start/end date, etc. When we place a bet, the backend sends an order to CLOB with that marketId and the selected outcome (Yes or No).The price is what we want to buy at, and amount is how much we’re betting.
 *	Backend doesn’t need to know which market the user is interacting with in Discord ahead of time.
-*	Discord bot: when the user clicks /bet or /cashout in Discord, the bot knows which market or outcome the user selected.
+
 *	The bot then sends a request to backend (or generates a session token URL) that’s tied to that Discord ID.
 *	Backend workflow:
 1.	Receive session token from frontend (generated via Discord ID).
@@ -265,8 +353,6 @@ Gamma API gives all the market metadata: question, outcomes (Yes/No), start/end 
 3.	Use the token + request body (amount, price, and for cashout, position ID) to place the order.
 ⦁	Market ID in placeOrders: comes from the Discord bot’s context, not something the frontend or backend decides.
 ⦁	Handle the request with token + wallet + amount/price and send it to Polymarket/CLOB. 
-
-
 
 
 Gamma API (Market Data)
@@ -296,7 +382,6 @@ Base URLs:
 REST: https://clob.polymarket.com <br>
 WebSocket: wss://ws-subscriptions-clob.polymarket.com/ws/ <br>
 Data-only endpoints (e.g., positions): https://data-api.polymarket.com
-
 
 
 The Discord bot already has the user’s wallet details from their session
