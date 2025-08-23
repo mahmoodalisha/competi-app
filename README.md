@@ -409,6 +409,8 @@ This ensures only the Discord user can see their own positions.
 * ✅ Allows the same Discord flow for placing trades. 
 
 
+![Screenshot 2025-08-23 at 02 44 08_5dae2e6e](https://github.com/user-attachments/assets/d2e5a0dd-fbdf-4cc2-a5ba-eeeafe6cff4d)
+
 <img width="1846" height="1033" alt="Screenshot 2025-08-18 120443 1" src="https://github.com/user-attachments/assets/572d8436-2bf1-4cb4-a8eb-f89bf817a032" />
 
 Video of the Live graph:
@@ -417,11 +419,10 @@ https://github.com/user-attachments/assets/3c817e37-9239-4591-934a-0b74808cba20
 
 <img width="1913" height="969" alt="Screenshot 2025-08-17 015514" src="https://github.com/user-attachments/assets/d1b05a8b-1c1f-4d38-9206-18cd4f8ed7ac" />
 
-<img width="1920" height="1080" alt="Screenshot 2025-08-15 170444" src="https://github.com/user-attachments/assets/26ec055b-95c6-4095-94e1-128fd2dd2ec5" />
+# Cashout at live market rate: 
 
-<img width="1920" height="1020" alt="Screenshot 2025-08-15 201526" src="https://github.com/user-attachments/assets/2436e55a-0500-4065-96cc-8d575851020f" />
+<img width="1920" height="1080" alt="Screenshot 2025-08-23 140212" src="https://github.com/user-attachments/assets/77507f9e-b08b-44ad-8751-64b3ddf76c9b" />
 
-## Mock open positions
-<img width="1919" height="972" alt="Screenshot 2025-08-15 215100" src="https://github.com/user-attachments/assets/94b79b99-5bea-4a7a-8d9e-0d1cdd544df5" />
-
+# Fetch Open positions:
+<img width="1920" height="1080" alt="Screenshot 2025-08-23 131510" src="https://github.com/user-attachments/assets/b2705537-c955-45e6-b9ce-03e2fbbbea77" />
 
