@@ -200,7 +200,7 @@ WALLET_PRIVATE_KEY=your_wallet_address
 JWT_SECRET=your_jwt_secret
 REDIS_URL=redis://127.0.0.1:6379
 ```
-## How run the server: 
+## Run the server: 
 ```
 fork clone https://github.com/mahmoodalisha/competi-app.git
 cd competi-app
@@ -218,14 +218,11 @@ node index.js
 * Session created! Click here: http://localhost:3000/market/516706?token=eyJhbGciOiJ
 * Visit the page to place a bet and see the live graph
 
-```
-Use this token in the next API calls.
 
 ## 2️⃣ Fetch open positions
 **GET** http://localhost:3000/api/positions?wallet=yourwalletaddress
-
-**Response:**
 ```
+Response: 
 {
   "success": true,
   "wallet": "your wallet address",
@@ -293,8 +290,8 @@ Use this token in the next API calls.
 
 ## 3️⃣ Place a bet
 **POST** http://localhost:3000/api/placeOrders
-**Request Body:**
 ```
+Request Body: 
  {
   "marketId": "516720",
   "outcome": "NO",
