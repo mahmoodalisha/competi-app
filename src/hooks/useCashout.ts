@@ -1,19 +1,51 @@
-import { useState } from "react";
-import axios from "axios";
+import { useState } from 'react';
 
-export const useCashout = (token: string) => {
-  const [loading, setLoading] = useState(false);
+interface CashoutParams {
+  position: any;
+  fullCashout?: boolean;
+  size?: number;
+}
 
-  const cashoutPosition = async (positionId: string, amount: number) => {
-    if (!token) return;
-    setLoading(true);
+interface CashoutResponse {
+  success: boolean;
+  order: any;
+  cashoutValue: number;
+  message: string;
+}
+
+export const useCashout = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<CashoutResponse | null>(null);
+
+  const executeCashout = async ({ position, fullCashout = true, size }: CashoutParams) => {
+    setIsLoading(true);
+    setError(null);
+    
     try {
-      await axios.post("/api/cashout", { token, tokenId: positionId, amount });
-    } catch (err) {
-      console.error(err);
+      const response = await fetch('/api/cashout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ position, fullCashout, size }),
+      });
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to cashout');
+      }
+      
+      setData(result);
+      return result;
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setIsLoading(false);
     }
-    setLoading(false);
   };
 
-  return { cashoutPosition, cashoutLoading: loading };
+  return { executeCashout, isLoading, error, data };
 };

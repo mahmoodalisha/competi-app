@@ -38,9 +38,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const redisKey = `orders:${wallet}`;
     const rawOrders = await redis.lrange(redisKey, 0, -1);
     const cachedOrders = rawOrders.map(o => JSON.parse(o));
-
+    
+    const forceRefresh = req.query.refresh === 'true';
     // If we have orders in Redis, return them immediately
-    if (cachedOrders.length > 0) {
+    if (cachedOrders.length > 0 && !forceRefresh) {
       return res.status(200).json({
         success: true,
         wallet,
@@ -131,11 +132,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       }),
     ]);
+    // Transform positions to include tokenID
+    console.log("Raw positions response:", JSON.stringify(positionsRes.data, null, 2));
+    console.log("Raw orders response:", JSON.stringify(ordersRes.data, null, 2));
+  const positionsWithTokens = positionsRes.data.map((position: any) => ({
+  marketId: position.market || position.condition_id || position.conditionId,
+  outcome: position.outcome,
+  size: position.size,
+  price: position.price,
+  tokenID: position.asset,
+  wallet: proxyWallet,
+  timestamp: Date.now()
+}));
+
+// Clear existing Redis data and store new positions with tokenID
+await redis.del(`orders:${wallet}`);
+for (const position of positionsWithTokens) {
+  await redis.lpush(`orders:${wallet}`, JSON.stringify(position));
+}
 
     return res.status(200).json({
       success: true,
       wallet: proxyWallet,
-      positions: positionsRes.data,
+      positions: positionsWithTokens,
       openOrders: ordersRes.data,
       source: "polymarket"
     });
