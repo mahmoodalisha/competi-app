@@ -123,8 +123,8 @@ Discord bot was sending a price along with the cashout request.<br>
 That price could be stale because it was based on an old snapshot of the orderbook.<br>
 If the market moved in those seconds, the cashout could fail or give a worse fill.<br>
 Now:<br>
-✅ Live Market Rates: getBestMarketPrice() fetches real-time bids /book endpoint<br>
-✅ Accurate Pricing: No cached/stale prices - always fresh from /book<br>
+✅ Gets live market price using client.getOrderBook(tokenID) - fetches real-time bid/ask prices<br>
+✅ Calculates sell price with slippage protection: bestBid * (1 - slippageBps/10000)<br>
 ✅ Specific Position Cashout: Can target exact marketId + wallet<br>
 ✅ Real-time Values: Each API call gets current market data<br>
 ✅ Token ID Integration: Properly maps positions to tradeable tokens<br>
