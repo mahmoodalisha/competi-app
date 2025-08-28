@@ -1,3 +1,9 @@
+## Video of the Working app, placebet and cashout working from UI 
+
+https://github.com/user-attachments/assets/1b24b267-0155-4cca-8077-744e006bd52c
+
+https://github.com/user-attachments/assets/53f5591a-fd9b-4fa8-9bf0-d6be31b5edc8
+
 ## Complete Folder Structure
 ```
 competi-app/
