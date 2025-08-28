@@ -4,6 +4,10 @@ https://github.com/user-attachments/assets/1b24b267-0155-4cca-8077-744e006bd52c
 
 https://github.com/user-attachments/assets/53f5591a-fd9b-4fa8-9bf0-d6be31b5edc8
 
+<img width="1559" height="772" alt="Screenshot 2025-08-28 132922" src="https://github.com/user-attachments/assets/6d775b5a-58e1-45a5-86a0-1e362a9860a4" />
+
+<img width="1920" height="1020" alt="Screenshot 2025-08-28 124752" src="https://github.com/user-attachments/assets/1837baa7-cfd7-426c-9632-912fc07a6f7f" />
+
 ## Complete Folder Structure
 ```
 competi-app/
