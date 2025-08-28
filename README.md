@@ -29,6 +29,7 @@ competi-app/
 │   │
 │   ├── components/            
 │   │   ├── PriceChart.tsx
+│   │   ├── RelatedMarketSection.tsx
 │   │
 │   ├── lib/                    # API client wrappers & utils
 │   │   ├── gammaClient.ts      # Wrap Gamma API calls
@@ -44,6 +45,7 @@ competi-app/
 │   │   ├── useCashout.ts
 │   │   ├── usePlaceOrder.ts
 |   |   ├── useLivePrices.ts
+|   |   ├── useRelatedMarkets.ts
 │   │
 │   ├── styles/
 │   │   └── globals.css

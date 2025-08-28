@@ -1,4 +1,3 @@
-//src/pages/api/positions.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 import { Wallet } from "ethers";
@@ -146,7 +145,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   timestamp: Date.now()
 }));
 
-// Clear existing Redis data and store new positions with tokenID
+
 await redis.del(`orders:${wallet}`);
 for (const position of positionsWithTokens) {
   await redis.lpush(`orders:${wallet}`, JSON.stringify(position));

@@ -1,4 +1,3 @@
-// src/hooks/useCashout.ts
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
@@ -22,7 +21,7 @@ export function useCashout(token: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Decode wallet from JWT
+  
   let wallet: string | null = null;
   try {
     const decoded = jwtDecode<TokenPayload>(token);

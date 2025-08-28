@@ -1,4 +1,3 @@
-// src/hooks/useLivePrices.ts
 import { useEffect, useState } from 'react';
 
 export const useLivePrices = (marketIds: string[]) => {

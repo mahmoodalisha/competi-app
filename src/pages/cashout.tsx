@@ -28,7 +28,7 @@ export default function CashoutPage() {
 
   const { positions, loading, error, submitCashout } = useCashout(token);
 
-  // Extract market IDs to subscribe to live prices
+  
   const marketIds = positions.map((p) => p.marketId);
   const { prices, isConnected, isPricesLoading } = useLivePrices(marketIds);
 

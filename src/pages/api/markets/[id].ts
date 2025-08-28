@@ -12,7 +12,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Fetch market metadata
     const metadataResponse = await axios.get(`${GAMMA_API}/markets/${id}`, {
       timeout: 10000,
       headers: {
@@ -27,7 +26,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(404).json({ error: "Market not found" });
     }
 
-    // Extract token IDs from metadata for orderbook API
     const tokens = metadata.tokens || [];
     let orderbook: any = { buys: [], sells: [] };
     
@@ -47,11 +45,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           orderbook = orderbookResponse.data;
         }
       } catch (orderbookError) {
-        // Continue with empty orderbook data
       }
     }
 
-    // Parse outcomes
+    
     let outcomes: string[] = [];
     try {
       if (typeof metadata.outcomes === "string") {
@@ -65,7 +62,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       outcomes = [];
     }
 
-    // Calculate odds and probabilities using token data
     const odds: number[] = [];
     const probabilities: number[] = [];
 
@@ -76,7 +72,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           const bestAsk = parseFloat(orderbook.asks?.[0]?.price || "0");
           let mid = bestBid && bestAsk ? (bestBid + bestAsk) / 2 : 0;
           
-          // Fallback to token price if available in metadata
           if (!mid && token.price) {
             mid = parseFloat(token.price);
           }
@@ -87,9 +82,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       });
     } else {
-      // Fallback: create odds based on outcomes length
       outcomes.forEach((_outcome, idx) => {
-        odds.push(0.5); // Default equal odds
+        odds.push(0.5);
       });
     }
 
@@ -98,7 +92,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       probabilities.push(odds[idx] / sum);
     });
 
-    // Return successful response
+    
     const response = {
       id: metadata.id,
       question: metadata.question,

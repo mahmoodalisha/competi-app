@@ -1,4 +1,3 @@
-// src/pages/api/session/create.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import jwt from "jsonwebtoken";
 
@@ -11,7 +10,6 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
-  // Generate a short-lived JWT
   const token = jwt.sign({ discordUserId, wallet }, JWT_SECRET, { expiresIn: "5m" });
 
   let url = "";

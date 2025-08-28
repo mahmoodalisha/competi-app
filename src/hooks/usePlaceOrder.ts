@@ -1,4 +1,3 @@
-// src/hooks/usePlaceOrder.ts
 import { useState, useCallback } from "react";
 import axios from "axios";
 
@@ -12,10 +11,10 @@ export function usePlaceOrder(token: string) {
         setPlacing(true);
         setError(null);
 
-        // ✅ Call your Next.js API route
+        
         const res = await axios.post(
           "/api/placeOrder",
-          { marketId, outcome, size, price: price ?? 0.5 }, // default mid price if not given
+          { marketId, outcome, size, price: price ?? 0.5 }, 
           {
             headers: { Authorization: `Bearer ${token}` },
           }

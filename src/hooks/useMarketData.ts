@@ -4,6 +4,7 @@ import axios from "axios";
 export interface Market {
   id: string;
   question: string;
+  description?: string;
   outcomes: string[];
   orderbook: any;
   odds: number[];
@@ -24,7 +25,7 @@ export const useMarketData = (marketId: string) => {
 
     try {
       const { data } = await axios.get(`/api/markets/${marketId}`, {
-        timeout: 10000, // 10 second timeout
+        timeout: 20000, 
         headers: {
           'Content-Type': 'application/json',
         },
@@ -42,7 +43,7 @@ export const useMarketData = (marketId: string) => {
   useEffect(() => {
     fetchMarket();
     
-    // Only set up polling if we have a valid marketId
+    
     if (!marketId) return;
     
     const interval = setInterval(fetchMarket, 10000);
