@@ -141,16 +141,22 @@ export default function MarketPage() {
 
         
         <button
-          onClick={() => {
-            if (selectedOutcome && amount > 0) {
-              placeOrder(marketId, selectedOutcome, amount);
-            }
-          }}
-          disabled={placing || !selectedOutcome || amount === 0}
-          className="w-full py-3 bg-purple-600 rounded-xl text-white font-semibold text-lg hover:bg-purple-700 disabled:opacity-50"
-        >
-          Review trade
-        </button>
+  onClick={async () => {
+    if (selectedOutcome && amount > 0) {
+      try {
+        const res = await placeOrder(marketId, selectedOutcome, amount);
+        alert(`✅ Order placed: ${JSON.stringify(res.order)}`);
+      } catch {
+        alert("❌ Failed to place order");
+      }
+    }
+  }}
+  disabled={placing || !selectedOutcome || amount === 0}
+  className="w-full py-3 bg-purple-600 rounded-xl text-white font-semibold text-lg hover:bg-purple-700 disabled:opacity-50"
+>
+  {placing ? "Placing..." : "Review trade"}
+</button>
+
       </div>
     </div>
   );

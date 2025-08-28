@@ -1,51 +1,94 @@
-import { useState } from 'react';
+// src/hooks/useCashout.ts
+import { useState, useEffect, useCallback } from "react";
+import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
-interface CashoutParams {
-  position: any;
-  fullCashout?: boolean;
-  size?: number;
+export interface Position {
+  marketId: string;
+  outcome: string;
+  size: number;
+  price: number;
+  tokenID: string;
+  wallet: string;
+  timestamp: number;
 }
 
-interface CashoutResponse {
-  success: boolean;
-  order: any;
-  cashoutValue: number;
-  message: string;
+interface TokenPayload {
+  wallet: string;
 }
 
-export const useCashout = () => {
-  const [isLoading, setIsLoading] = useState(false);
+export function useCashout(token: string) {
+  const [positions, setPositions] = useState<Position[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<CashoutResponse | null>(null);
 
-  const executeCashout = async ({ position, fullCashout = true, size }: CashoutParams) => {
-    setIsLoading(true);
-    setError(null);
-    
+  // Decode wallet from JWT
+  let wallet: string | null = null;
+  try {
+    const decoded = jwtDecode<TokenPayload>(token);
+    wallet = decoded.wallet;
+  } catch {
+    wallet = null;
+  }
+
+  const fetchPositions = useCallback(async () => {
+    if (!wallet) {
+      setError("Invalid wallet from session token");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await fetch('/api/cashout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ position, fullCashout, size }),
+      setLoading(true);
+      setError(null);
+
+      const res = await axios.get(`/api/positions`, {
+        params: { wallet }, // pass wallet address
       });
 
-      const result = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to cashout');
-      }
-      
-      setData(result);
-      return result;
+      setPositions(res.data.positions || []);
     } catch (err: any) {
-      setError(err.message);
-      throw err;
+      console.error("Failed to fetch positions:", err);
+      setError(err.response?.data?.error || "Failed to fetch positions");
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  };
+  }, [wallet]);
 
-  return { executeCashout, isLoading, error, data };
-};
+  const submitCashout = useCallback(
+    async (position: Position, size?: number) => {
+      if (!wallet) throw new Error("Invalid wallet");
+
+      try {
+        const res = await axios.post(`/api/cashout`, {
+          wallet: position.wallet,
+          marketId: position.marketId,
+          size,
+          fullCashout: !size,
+        });
+
+        setPositions((prev: Position[]) =>
+          prev
+            .map((p) =>
+              p.tokenID === position.tokenID
+                ? { ...p, size: p.size - (size || p.size) }
+                : p
+            )
+            .filter((p) => p.size > 0)
+        );
+
+        return res.data;
+      } catch (err: any) {
+        console.error("Cashout failed:", err);
+        throw err;
+      }
+    },
+    [wallet]
+  );
+
+  useEffect(() => {
+    fetchPositions();
+  }, [fetchPositions]);
+
+  return { positions, loading, error, fetchPositions, submitCashout };
+}

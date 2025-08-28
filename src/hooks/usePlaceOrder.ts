@@ -1,26 +1,37 @@
-import { useState } from "react";
+// src/hooks/usePlaceOrder.ts
+import { useState, useCallback } from "react";
+import axios from "axios";
 
 export function usePlaceOrder(token: string) {
   const [placing, setPlacing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  async function placeOrder(marketId: string, outcome: string, amount: number) {
-    if (!token) return;
-    setPlacing(true);
-    try {
-      const res = await fetch("/api/placeOrder", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, marketId, outcome, amount }),
-      });
-      if (!res.ok) throw new Error("Order failed");
-      const data = await res.json();
-      console.log("Order placed:", data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setPlacing(false);
-    }
-  }
+  const placeOrder = useCallback(
+    async (marketId: string, outcome: string, size: number, price?: number) => {
+      try {
+        setPlacing(true);
+        setError(null);
 
-  return { placeOrder, placing };
+        // ✅ Call your Next.js API route
+        const res = await axios.post(
+          "/api/placeOrder",
+          { marketId, outcome, size, price: price ?? 0.5 }, // default mid price if not given
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        return res.data;
+      } catch (err: any) {
+        console.error("Place order failed:", err);
+        setError(err.response?.data?.error || "Failed to place order");
+        throw err;
+      } finally {
+        setPlacing(false);
+      }
+    },
+    [token]
+  );
+
+  return { placeOrder, placing, error };
 }

@@ -1,128 +1,180 @@
-import { useState } from 'react';
-import { usePositions } from '@/hooks/usePositions';
-import { useCashout } from '@/hooks/useCashout';
-import { useLivePrices } from '@/hooks/useLivePrices';
+import { useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode";
+import { useCashout, Position } from "@/hooks/useCashout";
+import { useLivePrices } from "@/hooks/useLivePrices";
 
-interface Position {
-  id: string;
-  market_id: string;
-  side: string;
-  price: number;
-  size: number;
-  realized_pnl: number;
-  unrealized_pnl: number;
-  cashout_value: number;
-  market_title: string;
-  currentPrice?: number;
-}
-
-
-interface EnhancedPosition extends Position {
-  currentPrice: number;
-  cashoutValue: number;
+interface TokenPayload {
+  wallet: string;
 }
 
 export default function CashoutPage() {
-  const { positions, loading: positionsLoading, error: positionsError, refetch } = usePositions(null);
-  const { executeCashout, isLoading: cashoutLoading } = useCashout();
-  const [cashoutStatus, setCashoutStatus] = useState<Record<string, string>>({});
+  const [wallet, setWallet] = useState<string | null>(null);
+  const searchParams = new URLSearchParams(
+    typeof window !== "undefined" ? window.location.search : ""
+  );
+  const token = searchParams.get("token") || "";
 
-  // Get market IDs for live pricing
-  const marketIds = positions.map((p: Position) => p.market_id);
-  const { prices, isConnected } = useLivePrices(marketIds);
-
-  
-  const enhancedPositions: EnhancedPosition[] = positions.map((position: Position) => {
-    const marketPrice = prices[position.market_id];
-    let currentPrice = position.currentPrice || 0;
-    let cashoutValue = position.cashout_value || 0;
-
-    if (marketPrice) {
-      currentPrice = position.side === 'buy' ? marketPrice.bestBid : marketPrice.bestAsk;
-      cashoutValue = currentPrice * position.size;
+  useEffect(() => {
+    if (token) {
+      try {
+        const decoded = jwtDecode<TokenPayload>(token);
+        if (decoded.wallet) setWallet(decoded.wallet);
+        else console.error("JWT missing wallet field");
+      } catch (err) {
+        console.error("Invalid token:", err);
+      }
     }
+  }, [token]);
 
-    return {
-      ...position,
-      currentPrice,
-      cashoutValue,
-    };
-  });
+  const { positions, loading, error, submitCashout } = useCashout(token);
 
-  const handleCashout = async (position: EnhancedPosition) => {
-    try {
-      setCashoutStatus(prev => ({ ...prev, [position.id]: 'processing' }));
-      await executeCashout({ position });
-      setCashoutStatus(prev => ({ ...prev, [position.id]: 'success' }));
+  // Extract market IDs to subscribe to live prices
+  const marketIds = positions.map((p) => p.marketId);
+  const { prices, isConnected, isPricesLoading } = useLivePrices(marketIds);
 
-      // Refresh positions after cashout
-      setTimeout(() => refetch(), 2000);
-    } catch (error) {
-      setCashoutStatus(prev => ({ ...prev, [position.id]: 'error' }));
-      console.error('Cashout failed:', error);
-    }
-  };
-
-  if (positionsLoading) return <div className="p-4">Loading positions...</div>;
-  if (positionsError) return <div className="p-4 text-red-500">Error loading positions: {positionsError}</div>;
+  if (!wallet) return (
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="bg-gray-800 p-6 rounded-lg shadow-xl">
+        <p className="text-red-400 text-lg font-medium">Invalid or missing session token.</p>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Your Positions</h1>
-      <div className="mb-4">
-        <span className={`inline-block w-3 h-3 rounded-full mr-2 ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></span>
-        Live prices: {isConnected ? 'Connected' : 'Disconnected'}
-      </div>
+    <div className="min-h-screen bg-gray-900 text-gray-100 p-6">
+      <div className="max-w-6xl mx-auto">
+        <header className="flex justify-between items-center mb-8 p-4 bg-gray-800 rounded-lg">
+          <h1 className="text-2xl font-bold text-purple-400 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Cashout Positions
+          </h1>
+          <div className="flex items-center space-x-4">
+            <div className={`flex items-center ${isConnected ? "text-green-400" : "text-red-400"}`}>
+              <div className={`h-3 w-3 rounded-full mr-2 ${isConnected ? "bg-green-400" : "bg-red-400"}`}></div>
+              {isConnected ? "Live" : "Disconnected"}
+            </div>
+            <div className="text-sm bg-gray-700 px-3 py-1 rounded-md">
+              Wallet: {wallet.substring(0, 6)}...{wallet.substring(wallet.length - 4)}
+            </div>
+          </div>
+        </header>
 
-      {enhancedPositions.length === 0 ? (
-        <p>No open positions found.</p>
-      ) : (
-        <div className="grid gap-4">
-          {enhancedPositions.map(position => (
-            <div key={position.id} className="border p-4 rounded-lg">
-              <h2 className="text-xl font-semibold">{position.market_title}</h2>
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                <div>
-                  <p>
-                    Side:{' '}
-                    <span className={position.side === 'buy' ? 'text-green-600' : 'text-red-600'}>
-                      {position.side.toUpperCase()}
-                    </span>
-                  </p>
-                  <p>Size: {position.size}</p>
-                  <p>Entry Price: {position.price.toFixed(4)}</p>
-                </div>
-                <div>
-                  <p>Current Price: {position.currentPrice.toFixed(4)}</p>
-                  <p>P/L: {(position.unrealized_pnl || 0).toFixed(4)}</p>
-                  <p className="font-bold">Cashout Value: ${position.cashoutValue.toFixed(2)}</p>
+        {loading && (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 mb-6">
+            <p className="text-red-200 font-medium">{error}</p>
+          </div>
+        )}
+
+        {!loading && positions.length === 0 && (
+          <div className="bg-gray-800 rounded-lg p-8 text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-gray-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-xl text-gray-400">No positions available for cashout</p>
+          </div>
+        )}
+
+        <div className="grid gap-5">
+          {positions.map((pos: Position) => {
+            const marketPrice = prices[pos.marketId] || { bestBid: 0, bestAsk: 0 };
+            const priceChangeColor = marketPrice.bestBid > pos.price ? "text-green-400" : "text-red-400";
+            
+            return (
+              <div key={pos.tokenID} className="bg-gray-800 border border-gray-700 rounded-xl p-5 shadow-lg">
+                <div className="flex flex-col md:flex-row justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center mb-3">
+                      <div className="bg-purple-900/30 rounded-md px-3 py-1 mr-3">
+                        <span className="font-semibold text-purple-300">{pos.marketId.substring(0, 8)}</span>
+                      </div>
+                      <h3 className="text-lg font-bold">{pos.outcome}</h3>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <p className="text-sm text-gray-400">Position Size</p>
+                        <p className="font-mono font-medium">{pos.size}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-400">Entry Price</p>
+                        <p className="font-mono">{pos.price}</p>
+                      </div>
+                    </div>
+                    
+                    {!isPricesLoading && (
+                      <div className="bg-gray-900 rounded-lg p-3">
+                        <p className="text-sm text-gray-400 mb-1">Live Market Prices</p>
+                        <div className="flex justify-between">
+                          <div>
+                            <span className="text-gray-500 text-sm">Bid: </span>
+                            <span className="font-mono">{marketPrice.bestBid.toFixed(2)}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500 text-sm">Ask: </span>
+                            <span className="font-mono">{marketPrice.bestAsk.toFixed(2)}</span>
+                          </div>
+                          <div className={priceChangeColor}>
+                            <span className="text-sm">{marketPrice.bestBid > pos.price ? "▲" : "▼"}</span>
+                            <span className="font-mono ml-1">
+                              {Math.abs(marketPrice.bestBid - pos.price).toFixed(2)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex flex-col justify-center space-y-3 mt-4 md:mt-0 md:ml-4">
+                    <button
+                      className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center shadow-lg hover:shadow-purple-500/20"
+                      onClick={async () => {
+                        try {
+                          await submitCashout(pos);
+                          alert(`Full cashout submitted for ${pos.outcome}`);
+                        } catch {
+                          alert("Cashout failed");
+                        }
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Cashout All
+                    </button>
+                    <button
+                      className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center border border-purple-400/30"
+                      onClick={async () => {
+                        const partial = parseFloat(prompt("Enter partial size:") || "0");
+                        if (partial > 0) {
+                          try {
+                            await submitCashout(pos, partial);
+                            alert(`Partial cashout of ${partial} submitted for ${pos.outcome}`);
+                          } catch {
+                            alert("Cashout failed");
+                          }
+                        }
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      Partial Cashout
+                    </button>
+                  </div>
                 </div>
               </div>
-
-              <button
-                onClick={() => handleCashout(position)}
-                disabled={cashoutLoading || cashoutStatus[position.id] === 'processing' || !position.currentPrice}
-                className={`mt-3 px-4 py-2 rounded ${
-                  cashoutLoading || cashoutStatus[position.id] === 'processing' || !position.currentPrice
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-blue-500 hover:bg-blue-600 text-white'
-                }`}
-              >
-                {cashoutStatus[position.id] === 'processing'
-                  ? 'Processing...'
-                  : `Cashout $${position.cashoutValue.toFixed(2)}`}
-              </button>
-
-              {cashoutStatus[position.id] === 'success' && (
-                <p className="text-green-600 mt-2">Cashout successful!</p>
-              )}
-              {cashoutStatus[position.id] === 'error' && (
-                <p className="text-red-600 mt-2">Cashout failed. Please try again.</p>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
-      )}
+      </div>
     </div>
   );
 }
